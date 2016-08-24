@@ -5,12 +5,16 @@ import shutil
 import argparse
 
 def symmv(src, dst):
+    src = src.rstrip('/')
     if os.path.islink(src):
         linkto = os.readlink(src)
         os.symlink(linkto, dst)
     else:
         shutil.move(src, dst)
-        os.symlink(dst, src)
+        if os.path.exists(os.path.join(dst, src)):
+            os.symlink(os.path.join(dst, src), src)
+        else:
+            os.symlink(dst, src)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
