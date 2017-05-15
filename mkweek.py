@@ -60,7 +60,7 @@ def mkweek(pathfmt, thisdate, verbose=False):
 
 # Wrapper around mkweek() that deals with temp and permanent directory
 # logic
-def mkweek_full(thisdate, mktemp=False, mkperm=True, verbose=False):
+def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
     tempdir='/home/robla/tmp'
     tempfmt=os.path.join(tempdir, "%gW%V")
     permdir='/home/robla'
