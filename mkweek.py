@@ -62,7 +62,7 @@ def mkweek(pathfmt, thisdate, verbose=False):
 # logic
 def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
     tempdir='/home/robla/tmp'
-    tempfmt=os.path.join(tempdir, "%gW%V")
+    tempfmt=os.path.join(tempdir, "%G", "%gW%V")
     permdir='/home/robla'
     permfmt=os.path.join(permdir, "%G", "%gW%V")
 
