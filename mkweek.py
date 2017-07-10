@@ -6,13 +6,14 @@
 # /home/robla/YYYY - these are where the stuff I hope to keep around
 # permanently hangs around.
 # /home/robla/tmp - week-based directories are built in here, with the
-#  assumption that if it gets too cluttered or full, I'll nuke the 
+#  assumption that if it gets too cluttered or full, I'll nuke the
 #  directories
 import argparse
 import datetime
 import isoweek
 import os
 import re
+
 
 # Use argparse to parse the command-line arguments:
 def parse_arguments():
@@ -38,34 +39,37 @@ def parseweek(datestr):
 # make directories for a given week, given a pathfmt
 def mkweek(pathfmt, thisdate, verbose=False):
     thisdatepath = thisdate.strftime(pathfmt)
-    if verbose: print('Doing ' + thisdate.strftime(pathfmt))
+    if verbose:
+        print('Doing ' + thisdate.strftime(pathfmt))
     try:
         os.makedirs(thisdate.strftime(pathfmt))
     except FileExistsError:
         pass
     lastweek = thisdate - datetime.timedelta(days=7)
-    if verbose: print(lastweek.strftime(pathfmt))
+    if verbose:
+        print(lastweek.strftime(pathfmt))
     try:
         os.symlink(lastweek.strftime(pathfmt),
-            os.path.join(thisdatepath, 'lastweek'))
+                   os.path.join(thisdatepath, 'lastweek'))
     except FileExistsError:
         pass
     nextweek = thisdate + datetime.timedelta(days=7)
     try:
         os.symlink(nextweek.strftime(pathfmt),
-            os.path.join(thisdatepath, 'nextweek'))
+                   os.path.join(thisdatepath, 'nextweek'))
     except FileExistsError:
         pass
-    if verbose: print(nextweek.strftime(pathfmt))
+    if verbose:
+        print(nextweek.strftime(pathfmt))
 
 
 # Wrapper around mkweek() that deals with temp and permanent directory
 # logic
 def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
-    tempdir='/home/robla/tmp'
-    tempfmt=os.path.join(tempdir, "%G", "%gW%V")
-    permdir='/home/robla'
-    permfmt=os.path.join(permdir, "%G", "%gW%V")
+    tempdir = '/home/robla/tmp'
+    tempfmt = os.path.join(tempdir, "%G", "%gW%V")
+    permdir = '/home/robla'
+    permfmt = os.path.join(permdir, "%G", "%gW%V")
 
     if(mktemp):
         thisdatepath = thisdate.strftime(tempfmt)
@@ -73,7 +77,7 @@ def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
         try:
             # link from the tmp dir to the perm
             os.symlink(thisdate.strftime(permfmt),
-                os.path.join(thisdatepath, 'perm'))
+                       os.path.join(thisdatepath, 'perm'))
         except FileExistsError:
             pass
 
@@ -83,7 +87,7 @@ def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
         try:
             # link from the perm dir to the tmp
             os.symlink(thisdate.strftime(tempfmt),
-                os.path.join(thisdatepath, 'tmp'))
+                       os.path.join(thisdatepath, 'tmp'))
         except FileExistsError:
             pass
 
@@ -122,9 +126,8 @@ def main():
     if args.bump:
         bumpweek(thisdate, verbose=args.verbose)
     mkweek_full(thisdate, mktemp=True, mkperm=True,
-        verbose=args.verbose)
+                verbose=args.verbose)
 
 
 if __name__ == "__main__":
     main()
-
