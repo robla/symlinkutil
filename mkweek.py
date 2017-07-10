@@ -23,6 +23,7 @@ def parse_arguments():
         help='iso date (default today)',
         default=datetime.date.today().isoformat())
     parser.add_argument('--verbose', '-v', action='store_true')
+    parser.add_argument('--bump', '-b', action='store_true')
     return parser.parse_args()
 
 
@@ -87,6 +88,26 @@ def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
             pass
 
 
+# Update the symlink for $HOME/thisweek
+def bumpweek(thisdate, verbose=False):
+    homedir = '/home/robla'
+    # %g - two digit ISO 8601 year
+    # %V - ISO 8601 week number
+    # For more: http://man7.org/linux/man-pages/man3/strftime.3.html
+    weekdirtemplate = os.path.join(homedir, "%G", "%gW%V")
+    thisweekdir = thisdate.strftime(weekdirtemplate)
+    linktarget = os.path.join(homedir, 'thisweek')
+    curtarget = os.path.realpath(linktarget)
+    if thisweekdir == curtarget:
+        if(verbose):
+            print('{} is already current'.format(curtarget))
+    else:
+        if(verbose):
+            print('updating {} to {}'.format(curtarget, thisweekdir))
+        os.remove(linktarget)
+        os.symlink(thisweekdir, linktarget)
+
+
 def main():
     args = parse_arguments()
     datestr = args.date
@@ -98,6 +119,8 @@ def main():
         thisdate = thisweek.monday()
     else:
         thisdate = datetime.datetime.now()
+    if args.bump:
+        bumpweek(thisdate, verbose=args.verbose)
     mkweek_full(thisdate, mktemp=True, mkperm=True,
         verbose=args.verbose)
 
