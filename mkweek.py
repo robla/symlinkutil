@@ -23,8 +23,10 @@ def parse_arguments():
         'date', nargs='?',
         help='iso date (default today)',
         default=datetime.date.today().isoformat())
-    parser.add_argument('--verbose', '-v', action='store_true')
-    parser.add_argument('--bump', '-b', action='store_true')
+    parser.add_argument('--bump', '-b', action='store_true',
+        help='update "thisweek" symlink to point to this week')
+    parser.add_argument('--verbose', '-v', action='store_true',
+        help='blah blah blah BORRRING')
     return parser.parse_args()
 
 
