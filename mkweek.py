@@ -41,28 +41,34 @@ def parseweek(datestr):
 # make directories for a given week, given a pathfmt
 def mkweek(pathfmt, thisdate, verbose=False):
     thisdatepath = thisdate.strftime(pathfmt)
-    if verbose:
-        print('Doing ' + thisdate.strftime(pathfmt))
     try:
         os.makedirs(thisdate.strftime(pathfmt))
+        if verbose:
+            print('Making ' + thisdate.strftime(pathfmt))
     except FileExistsError:
+        if verbose:
+            print('Skipping already built ' + thisdate.strftime(pathfmt))
         pass
     lastweek = thisdate - datetime.timedelta(days=7)
-    if verbose:
-        print(lastweek.strftime(pathfmt))
     try:
         os.symlink(lastweek.strftime(pathfmt),
                    os.path.join(thisdatepath, 'lastweek'))
+        if verbose:
+            print("Linking lastweek " + lastweek.strftime(pathfmt))
     except FileExistsError:
+        if verbose:
+            print('Skipping lastweek ' + lastweek.strftime(pathfmt))
         pass
     nextweek = thisdate + datetime.timedelta(days=7)
     try:
         os.symlink(nextweek.strftime(pathfmt),
                    os.path.join(thisdatepath, 'nextweek'))
+        if verbose:
+            print("Linking nextweek " + nextweek.strftime(pathfmt))
     except FileExistsError:
+        if verbose:
+            print("Skipping nextweek " + nextweek.strftime(pathfmt))
         pass
-    if verbose:
-        print(nextweek.strftime(pathfmt))
 
 
 # Wrapper around mkweek() that deals with temp and permanent directory
@@ -82,6 +88,7 @@ def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
                        os.path.join(thisdatepath, 'perm'))
         except FileExistsError:
             pass
+        
 
     if(mkperm):
         thisdatepath = thisdate.strftime(permfmt)
@@ -101,6 +108,7 @@ def bumpweek(thisdate, verbose=False):
     # %V - ISO 8601 week number
     # For more: http://man7.org/linux/man-pages/man3/strftime.3.html
     weekdirtemplate = os.path.join(homedir, "%G", "%gW%V")
+    tmpweekdirtemplate = os.path.join(homedir, "tmp", "%G", "%gW%V")
     thisweekdir = thisdate.strftime(weekdirtemplate)
     linktarget = os.path.join(homedir, 'thisweek')
     curtarget = os.path.realpath(linktarget)
@@ -110,6 +118,12 @@ def bumpweek(thisdate, verbose=False):
     else:
         if(verbose):
             print('updating {} to {}'.format(curtarget, thisweekdir))
+        os.remove(linktarget)
+        os.symlink(thisweekdir, linktarget)
+        # link from ~/tmp/current-tmp to ~/tmp/%G/%gW%V
+        thisweekdir = thisdate.strftime(tmpweekdirtemplate)
+        linktarget = os.path.join(homedir, 'tmp', 'current-tmp')
+        curtarget = os.path.realpath(linktarget)
         os.remove(linktarget)
         os.symlink(thisweekdir, linktarget)
 
