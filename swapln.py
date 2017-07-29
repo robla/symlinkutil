@@ -36,12 +36,15 @@ def parse_arguments():
 def swapln(oldhome, newhome, forsure=False):
     print("rm {}".format(newhome))
     print("mv {} {}".format(oldhome, newhome))
-    print("ln -s {} {}".format(newhome, oldhome))    
+    print("ln -rs {} {} #I think....".format(newhome, oldhome))
     if forsure:
         print("okaaaaay....")
         os.remove(newhome)
         shutil.move(oldhome, newhome)
-        os.symlink(newhome, oldhome)
+        # newsymtarg is what the new path looks like from the dir of
+        # the old path
+        newsymtarg = os.path.relpath(newhome, os.path.dirname(oldhome))
+        os.symlink(newsymtarg, oldhome)
     else:
         print("haven't done it yet...")
 
