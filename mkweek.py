@@ -31,7 +31,7 @@ def parse_arguments():
 
 
 # parse out weeks given in iso format (e.g. "17W17" or "2017W17")
-def getdateforweek(datestr):
+def getmondayforweek(datestr):
     import isoweek
     yearweek = re.search(r'(\d{2})W(\d{2})', datestr)
     thisyear = int("20" + yearweek.group(1))
@@ -143,7 +143,7 @@ def main():
     if(re.search(r'\d{4}-\d{2}-\d{2}', datestr)):
         thisdate = datetime.datetime.strptime(datestr, '%Y-%m-%d').date()
     elif(re.search(r'\d{2}W\d{2}', datestr)):
-        thisdate = getdateforweek(datestr)
+        thisdate = getmondayforweek(datestr)
     else:
         thisdate = datetime.datetime.now()
     if args.bump:
