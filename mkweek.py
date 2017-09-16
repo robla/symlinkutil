@@ -10,7 +10,6 @@
 #  directories
 import argparse
 import datetime
-import isoweek
 import os
 import re
 
@@ -32,6 +31,7 @@ def parse_arguments():
 
 # parse out weeks given in iso format (e.g. "17W17" or "2017W17")
 def parseweek(datestr):
+    import isoweek
     yearweek = re.search(r'(\d{2})W(\d{2})', datestr)
     thisyear = int("20" + yearweek.group(1))
     thisweek = int(yearweek.group(2))
@@ -118,13 +118,19 @@ def bumpweek(thisdate, verbose=False):
     else:
         if(verbose):
             print('updating {} to {}'.format(curtarget, thisweekdir))
-        os.remove(linktarget)
+        try:
+            os.remove(linktarget)
+        except FileNotFoundError:
+            pass
         os.symlink(thisweekdir, linktarget)
         # link from ~/tmp/current-tmp to ~/tmp/%G/%gW%V
         thisweekdir = thisdate.strftime(tmpweekdirtemplate)
         linktarget = os.path.join(homedir, 'tmp', 'current-tmp')
         curtarget = os.path.realpath(linktarget)
-        os.remove(linktarget)
+        try:
+            os.remove(linktarget)
+        except FileNotFoundError:
+            pass
         os.symlink(thisweekdir, linktarget)
 
 
