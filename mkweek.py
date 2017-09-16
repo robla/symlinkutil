@@ -13,6 +13,7 @@ import datetime
 import os
 import re
 
+TOPDIR = '/tmp/mkweek-test-dir'
 
 # Use argparse to parse the command-line arguments:
 def parse_arguments():
@@ -30,12 +31,13 @@ def parse_arguments():
 
 
 # parse out weeks given in iso format (e.g. "17W17" or "2017W17")
-def parseweek(datestr):
+def getdateforweek(datestr):
     import isoweek
     yearweek = re.search(r'(\d{2})W(\d{2})', datestr)
     thisyear = int("20" + yearweek.group(1))
     thisweek = int(yearweek.group(2))
-    return isoweek.Week(thisyear, thisweek)
+    weekobj = isoweek.Week(thisyear, thisweek)
+    return weekobj.monday()
 
 
 # make directories for a given week, given a pathfmt
@@ -74,9 +76,9 @@ def mkweek(pathfmt, thisdate, verbose=False):
 # Wrapper around mkweek() that deals with temp and permanent directory
 # logic
 def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
-    tempdir = '/home/robla/tmp'
+    tempdir = TOPDIR + '/tmp'
     tempfmt = os.path.join(tempdir, "%G", "%gW%V")
-    permdir = '/home/robla'
+    permdir = TOPDIR
     permfmt = os.path.join(permdir, "%G", "%gW%V")
 
     if(mktemp):
@@ -103,7 +105,7 @@ def mkweek_full(thisdate, mktemp=True, mkperm=True, verbose=False):
 
 # Update the symlink for $HOME/thisweek
 def bumpweek(thisdate, verbose=False):
-    homedir = '/home/robla'
+    homedir = TOPDIR
     # %g - two digit ISO 8601 year
     # %V - ISO 8601 week number
     # For more: http://man7.org/linux/man-pages/man3/strftime.3.html
@@ -141,8 +143,7 @@ def main():
     if(re.search(r'\d{4}-\d{2}-\d{2}', datestr)):
         thisdate = datetime.datetime.strptime(datestr, '%Y-%m-%d').date()
     elif(re.search(r'\d{2}W\d{2}', datestr)):
-        thisweek = parseweek(datestr)
-        thisdate = thisweek.monday()
+        thisdate = getdateforweek(datestr)
     else:
         thisdate = datetime.datetime.now()
     if args.bump:
