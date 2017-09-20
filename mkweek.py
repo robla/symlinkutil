@@ -146,10 +146,10 @@ def main():
         thisdate = getmondayforweek(datestr)
     else:
         thisdate = datetime.datetime.now()
-    if args.bump:
-        bumpweek(thisdate, verbose=args.verbose)
     mkweek_full(thisdate, mktemp=True, mkperm=True,
                 verbose=args.verbose)
+    if args.bump:
+        bumpweek(thisdate, verbose=args.verbose)
 
 
 if __name__ == "__main__":
