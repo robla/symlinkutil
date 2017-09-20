@@ -13,7 +13,7 @@ import datetime
 import os
 import re
 
-TOPDIR = '/tmp/mkweek-test-dir'
+TOPDIR = os.environ['HOME']
 
 # Use argparse to parse the command-line arguments:
 def parse_arguments():
