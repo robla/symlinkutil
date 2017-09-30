@@ -13,7 +13,7 @@ import datetime
 import os
 import re
 
-TOPDIR = os.environ['HOME']
+TOPDIR = os.path.join(os.environ['HOME'], ".myxroot")
 
 # Use argparse to parse the command-line arguments:
 def parse_arguments():
