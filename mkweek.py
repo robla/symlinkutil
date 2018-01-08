@@ -12,6 +12,7 @@ import argparse
 import datetime
 import os
 import re
+import subprocess
 
 TOPDIR = os.path.join(os.environ['HOME'], ".myxroot")
 
@@ -25,6 +26,8 @@ def parse_arguments():
         default=datetime.date.today().isoformat())
     parser.add_argument('--bump', '-b', action='store_true',
         help='update "thisweek" symlink to point to this week')
+    parser.add_argument('--test', '-t', action='store_true',
+        help='run tests (TODO: make tests for this)')
     parser.add_argument('--verbose', '-v', action='store_true',
         help='blah blah blah BORRRING')
     return parser.parse_args()
@@ -136,6 +139,18 @@ def bumpweek(thisdate, verbose=False):
         os.symlink(thisweekdir, linktarget)
 
 
+# 18W02 - I got tired of running mkweek-fixup manually, but not tired
+# enough to fix it right
+# TODO: convert this into Python
+def bumpweek_shellscript_kludge_mkweek_fixup():
+    # call my mkweek-fixup kludgey shell script
+    try:
+        out_bytes = subprocess.check_output(['mkweek-fixup'])
+        return out_bytes.decode('utf8')
+    except subprocess.CalledProcessError:
+        return "Probably done already ¯\_(ツ)_/¯"
+
+
 def main():
     args = parse_arguments()
     datestr = args.date
@@ -150,6 +165,12 @@ def main():
                 verbose=args.verbose)
     if args.bump:
         bumpweek(thisdate, verbose=args.verbose)
+        mkweekfixupoutput=bumpweek_shellscript_kludge_mkweek_fixup()
+        print(mkweekfixupoutput)
+    if args.test:
+        # TODO: put actual tests here:
+        mkweekfixupoutput=bumpweek_shellscript_kludge_mkweek_fixup()
+        print(mkweekfixupoutput)
 
 
 if __name__ == "__main__":
