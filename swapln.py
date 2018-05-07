@@ -23,16 +23,6 @@ def confirm_step(prompt):
            sys.stdout.write("Please respond with 'yes' or 'no'")
 
 
-def parse_arguments():
-    """ see http://docs.python.org/library/argparse """
-    parser = argparse.ArgumentParser(
-        description='Make pwd the symlink target, symlinking the old target back')
-    parser.add_argument('-f', '--force',
-                    help='force the action without confirming',
-                    action="store_true")
-    return parser.parse_args()
-
-
 def swapln(oldhome, newhome, forsure=False):
     print("rm {}".format(newhome))
     print("mv {} {}".format(oldhome, newhome))
@@ -52,7 +42,13 @@ def swapln(oldhome, newhome, forsure=False):
 def main(argv=None):
     """ Make PWD the symlink target, symlinking the old target back """
 
-    args = parse_arguments()
+    parser = argparse.ArgumentParser(
+        description='Make pwd the symlink target, symlinking the old target back')
+    parser.add_argument('-f', '--force',
+                    help='force the action without confirming',
+                    action="store_true")
+    args = parser.parse_args()
+
     oldhome = os.getcwd()
     newhome = os.getenv('PWD')
 
