@@ -24,9 +24,14 @@ def confirm_step(prompt):
 
 
 def swapln(oldhome, newhome, forsure=False):
-    print("rm {}".format(newhome))
-    print("mv {} {}".format(oldhome, newhome))
-    print("ln -rs {} {} #I think....".format(newhome, oldhome))
+    print("rm (1-new)")
+    print("  1-new) {}".format(newhome))
+    print("mv (1-old) (2-new)")
+    print("  1-old) {}".format(oldhome))
+    print("  2-new) {}".format(newhome))
+    print("ln -rs (1-new) (2-old)")
+    print("  1-new) {}".format(newhome))
+    print("  2-old) {}".format(oldhome))
     if forsure:
         print("okaaaaay....")
         os.remove(newhome)
@@ -52,7 +57,8 @@ def main(argv=None):
     oldhome = os.getcwd()
     newhome = os.getenv('PWD')
 
-    print('oldhome: {} newhome: {}'.format(oldhome, newhome))
+    print('oldhome: {}'.format(oldhome))
+    print('newhome: {}'.format(newhome))
 
     if args.force:
         swapln(oldhome, newhome, forsure=True)
