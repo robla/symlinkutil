@@ -23,23 +23,27 @@ def confirm_step(prompt):
            sys.stdout.write("Please respond with 'yes' or 'no'")
 
 
-def swapln(oldhome, newhome, forsure=False):
+def swapln(oldhome, newhome, forsure=False, relative=False):
+    if relative:
+        # symtarg should be the new path as seen from the dir of
+        # the old path
+        symtarg = os.path.relpath(newhome, os.path.dirname(oldhome))
+    else:
+        symtarg = os.path.abspath(newhome)
     print("rm (1-new)")
     print("  1-new) {}".format(newhome))
     print("mv (1-old) (2-new)")
     print("  1-old) {}".format(oldhome))
     print("  2-new) {}".format(newhome))
-    print("ln -rs (1-new) (2-old)")
-    print("  1-new) {}".format(newhome))
-    print("  2-old) {}".format(oldhome))
+    print("cd (1-olddir)")
+    print("  1-olddir) {}".format(os.path.dirname(oldhome)))
+    print("ln -s (1-symtarg)")
+    print("  1-symtarg) {}".format(symtarg))
     if forsure:
         print("okaaaaay....")
         os.remove(newhome)
         shutil.move(oldhome, newhome)
-        # newsymtarg is what the new path looks like from the dir of
-        # the old path
-        newsymtarg = os.path.relpath(newhome, os.path.dirname(oldhome))
-        os.symlink(newsymtarg, oldhome)
+        os.symlink(symtarg, oldhome)
     else:
         print("haven't done it yet...")
 
@@ -52,8 +56,11 @@ def main(argv=None):
     parser.add_argument('-f', '--force',
                     help='force the action without confirming',
                     action="store_true")
+    parser.add_argument('-r', '--relative',
+                        help='use relative links (default is absolute)',
+                        action="store_true")
     parser.add_argument('symfile', help='optional symlink to swap',
-                        default=None)
+                        nargs='?', default=None)
     args = parser.parse_args()
 
     if args.symfile:
@@ -72,11 +79,11 @@ def main(argv=None):
     print('newhome: {}'.format(newhome))
 
     if args.force:
-        swapln(oldhome, newhome, forsure=True)
+        swapln(oldhome, newhome, forsure=True, relative=args.relative)
     else:
-        swapln(oldhome, newhome)
+        swapln(oldhome, newhome, relative=args.relative)
         if confirm_step('wanna keep going?'):
-            swapln(oldhome, newhome, forsure=True)
+            swapln(oldhome, newhome, forsure=True, relative=args.relative)
         else:
             print("well, nevermind then")
 
