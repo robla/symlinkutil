@@ -4,7 +4,7 @@ import argparse
 import os
 import shutil
 import sys
-
+from os.path import realpath, normpath
 
 # adapted from http://stackoverflow.com/a/3042378/314034
 def confirm_step(prompt):
@@ -52,10 +52,21 @@ def main(argv=None):
     parser.add_argument('-f', '--force',
                     help='force the action without confirming',
                     action="store_true")
+    parser.add_argument('symfile', help='optional symlink to swap',
+                        default=None)
     args = parser.parse_args()
 
-    oldhome = os.getcwd()
-    newhome = os.getenv('PWD')
+    if args.symfile:
+        try:
+            oldhome = realpath(os.readlink(args.symfile))
+        except OSError:
+            print("'{}' is not a valid symlink".format(args.symfile))
+            sys.exit()
+        realpwd = realpath(os.getenv('PWD'))
+        newhome = normpath(os.path.join(realpwd, args.symfile))
+    else:
+        oldhome = os.getcwd()
+        newhome = os.getenv('PWD')
 
     print('oldhome: {}'.format(oldhome))
     print('newhome: {}'.format(newhome))
