@@ -179,14 +179,14 @@ def main():
 
     #  2. palette - style information for the UI
     palette = [
-        ('body','black','white', 'standout'),
-        ('header','black','light gray', 'bold'),
-        ('labelfocus','black', 'white', 'bold, underline'),
-        ('label','dark blue', 'white'),
-        ('fieldfocus','black,underline', 'white', 'bold, underline'),
-        ('field','black', 'white'),
-        ('button','black','white'),
-        ('buttonfocus','black','light gray','bold'),
+        ('body','white','black', 'standout'),
+        ('header','white','dark blue', 'bold'),
+        ('labelfocus','white', 'dark blue', 'bold, underline'),
+        ('label','white', 'black'),
+        ('fieldfocus','white,underline', 'dark blue', 'bold, underline'),
+        ('field','white', 'black'),
+        ('button','light gray','black','bold'),
+        ('buttonfocus','white','dark blue'),
         ]
 
     #  3. unhandled_input function - to deal with top level keystrokes
