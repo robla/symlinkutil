@@ -1,7 +1,5 @@
-#!/usr/bin/python
-# Paster create demo - this is an example of a possible user interface to the
-#   "paster create" command out of Python Paste
-# Copyright (c) 2010 Rob Lanphier
+#!/usr/bin/python3
+# Copyright (c) 2010-2019 Rob Lanphier
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -25,9 +23,19 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 import urwid
+from collections import OrderedDict
+
+FIELD_DEFS = [
+['origlink','Original link','readonlytext', '1 orig'],
+['origreadlink','Full link (origreadlin)','readonlytext', '2 mumble duvs'],
+['targetref', 'New value', 'text', '3 french hens'],
+['targetref-userroot', 'Alternative (userroot-based)', 'readonlytext', '4 user roots'],
+['targetref-realpath', 'Alternative (realpath-based)', 'readonlytext', '5 real paths'],
+['allowbroken', 'Allow writing broken symlink?', 'checkbox', False]
+]
 
 
-class ExitPasterDemo():
+class ExitUrwidForm(Exception):
     def __init__(self, exit_token=None):
         self.exit_token = exit_token
 
@@ -38,14 +46,23 @@ class FieldManager(object):
     implementation details of the widget set.
     """
     def __init__(self):
+        self.fieldset = OrderedDict()
         self.getters = {}
+        for i,d in enumerate(FIELD_DEFS):
+            key = d[0]
+            self.fieldset[key] = {}
+            self.getters[key] = {}
+            self.fieldset[key]['label'] = d[1]
+            self.fieldset[key]['type'] = d[2]
+            self.fieldset[key]['default'] = d[3]
+            self.getters[key] = lambda k=key: self.fieldset[k]['default']
 
     def set_getter(self, name, function):
         """ 
         This is where we collect all of the field getter functions.
         """
         self.getters[name] = function
-        
+
     def get_value(self, name):
         """
         This will actually get the value associated with a field name.
@@ -56,38 +73,41 @@ class FieldManager(object):
         """
         Dump everything we've got.
         """
-        retval = {}
-        for key in self.getters:
+        retval = OrderedDict()
+        for key in self.fieldset:
             retval[key] = self.getters[key]()
         return retval
 
 
-def get_field(labeltext, inputname, fieldtype, fieldmgr):
+def get_field(fieldname, fielddef, fieldmgr):
     """ Build a field in our form.  Called from get_body()"""
     # we don't have hanging indent, but we can stick a bullet out into the 
     # left column.
     asterisk = urwid.Text(('label', '* '))
-    label = urwid.Text(('label', labeltext))
+    label = urwid.Text(('label', fielddef['label']))
     colon = urwid.Text(('label', ': '))
 
-    if fieldtype == 'text':
-        field = urwid.Edit('', '')
+    defaultval = fieldmgr.get_value(fieldname)
+    if fielddef['type'] == 'text':
+        field = urwid.Edit('', defaultval)
         def getter():
             """ 
             Closure around urwid.Edit.get_edit_text(), which we'll
             use to scrape the value out when we're all done.
             """
             return field.get_edit_text()
-        fieldmgr.set_getter(inputname, getter)
-    elif fieldtype == 'checkbox':
-        field = urwid.CheckBox('')
+        fieldmgr.set_getter(fieldname, getter)
+    elif fielddef['type'] == 'readonlytext':
+        field = urwid.Text(('label', defaultval))
+    elif fielddef['type'] == 'checkbox':
+        field = urwid.CheckBox('', defaultval)
         def getter():
             """ 
             Closure around urwid.CheckBox.get_state(), which we'll
             use to scrape the value out when we're all done. 
             """
             return field.get_state()
-        fieldmgr.set_getter(inputname, getter)
+        fieldmgr.set_getter(fieldname, getter)
 
     field = urwid.AttrWrap(field, 'field', 'fieldfocus')
 
@@ -108,7 +128,7 @@ def get_buttons():
 
     # this is going to be what we actually do when someone clicks the button
     def ok_button_callback(button):
-        raise ExitPasterDemo(exit_token='ok')
+        raise ExitUrwidForm(exit_token='ok')
 
     # leading spaces to center it....seems like there should be a better way
     b = urwid.Button('  OK', on_press=ok_button_callback)
@@ -116,7 +136,7 @@ def get_buttons():
 
     # second verse, same as the first....
     def cancel_button_callback(button):
-        raise ExitPasterDemo(exit_token='cancel')
+        raise ExitUrwidForm(exit_token='cancel')
     b = urwid.Button('Cancel', on_press=cancel_button_callback)
     cancelbutton = urwid.AttrWrap(b, 'button', 'buttonfocus')
 
@@ -125,31 +145,28 @@ def get_buttons():
 
 def get_header():
     """ the header of our form, called from main() """
-    text_header = ("'paster create' Configuration"
+    text_header = ("lnedit - symlink editor"
         " - Use arrow keys to select a field to edit, select 'OK'"
         " when finished, or press ESC/select 'Cancel' to exit")
     header = urwid.Text(text_header)
     return urwid.AttrWrap(header, 'header')
 
 
+class AdvancingListBox(urwid.ListBox):
+    def keypress(self, size, key):
+        key = super(AdvancingListBox, self).keypress(size, key)
+        if key == 'enter':
+            if self.focus_position == 3:
+                self.focus_position = 8
+            return key
+
+
 def get_body(fieldmgr):
     """ the body of our form, called from main() """
-    fieldset = [
-              ('Project name', 'project', 'text'),
-              ('Version', 'version', 'text'),
-              ('Description (one liner)', 'shortdesc', 'text'),
-              ('Long description (multiline reStructuredText)', 'longdesc', 'text'),
-              ('Author', 'authorname', 'text'),
-              ('Author email', 'authoremail', 'text'),
-              ('URL to project page', 'projecturl', 'text'),
-              ('License', 'license', 'text'),
-              ('Zip safe?', 'zipsafe', 'checkbox')
-        ]
-
     # build the list of field widgets
     fieldwidgets = [urwid.Divider(bottom=2)]
-    for (label, inputname, fieldtype) in fieldset:
-        fieldwidgets.append(get_field(label, inputname, fieldtype, fieldmgr))
+    for fieldname, fielddef in fieldmgr.fieldset.items():
+        fieldwidgets.append(get_field(fieldname, fielddef, fieldmgr))
 
     fieldwidgets.append(urwid.Divider(bottom=1)) 
 
@@ -159,7 +176,8 @@ def get_body(fieldmgr):
     listwalker = urwid.SimpleListWalker(fieldwidgets)
 
     # ListBox is a scrollable frame around a list of elements
-    listbox = urwid.ListBox(listwalker)
+    #listbox = urwid.ListBox(listwalker)
+    listbox = AdvancingListBox(listwalker)
     return urwid.AttrWrap(listbox, 'body')
 
 
@@ -196,15 +214,17 @@ def main():
         keystrokes.
         """
         if key == 'esc':
-            raise ExitPasterDemo(exit_token='cancel')
+            raise ExitUrwidForm(exit_token='cancel')
 
     # Pass the topmost box widget to the MainLoop to start the show
+    urwidloop = urwid.MainLoop(frame, palette, unhandled_input=unhandled)
     try:
-        urwid.MainLoop(frame, palette, unhandled_input=unhandled).run()
-    except ExitPasterDemo as inst:
-        import pprint
-        pprint.pprint(fieldmgr.get_value_dict())
-        print "Exit value: " + inst.exit_token
+        urwidloop.run()
+    except ExitUrwidForm as inst:
+        import json
+        print(json.dumps(fieldmgr.get_value_dict(), indent=4))
+        print("Exit value: " + inst.exit_token)
+
 
 if '__main__'==__name__:
     main()
