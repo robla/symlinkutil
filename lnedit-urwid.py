@@ -26,16 +26,20 @@ import urwid
 from collections import OrderedDict
 
 FIELD_DEFS = [
-['origlink','Original link','readonlytext', '1 orig'],
-['origreadlink','Full link (origreadlin)','readonlytext', '2 mumble duvs'],
-['targetref', 'New value', 'text', '3 french hens'],
-['targetref-userroot', 'Alternative (userroot-based)', 'readonlytext', '4 user roots'],
-['targetref-realpath', 'Alternative (realpath-based)', 'readonlytext', '5 real paths'],
-['allowbroken', 'Allow writing broken symlink?', 'checkbox', False]
+    ['origlink', 'Original link', 'readonlytext', '1 orig'],
+    ['origreadlink', 'Full link (origreadlin)',
+     'readonlytext', '2 mumble duvs'],
+    ['targetref', 'New value', 'text', '3 french hens'],
+    ['targetref-userroot',
+        'Alternative (userroot-based)', 'readonlytext', '4 user roots'],
+    ['targetref-realpath',
+        'Alternative (realpath-based)', 'readonlytext', '5 real paths'],
+    ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False]
 ]
 
 
 class ExitUrwidForm(Exception):
+
     def __init__(self, exit_token=None):
         self.exit_token = exit_token
 
@@ -45,10 +49,11 @@ class FieldManager(object):
     This class manages the field data without being entangled in the 
     implementation details of the widget set.
     """
+
     def __init__(self):
         self.fieldset = OrderedDict()
         self.getters = {}
-        for i,d in enumerate(FIELD_DEFS):
+        for i, d in enumerate(FIELD_DEFS):
             key = d[0]
             self.fieldset[key] = {}
             self.getters[key] = {}
@@ -81,7 +86,7 @@ class FieldManager(object):
 
 def get_field(fieldname, fielddef, fieldmgr):
     """ Build a field in our form.  Called from get_body()"""
-    # we don't have hanging indent, but we can stick a bullet out into the 
+    # we don't have hanging indent, but we can stick a bullet out into the
     # left column.
     asterisk = urwid.Text(('label', '* '))
     label = urwid.Text(('label', fielddef['label']))
@@ -90,6 +95,7 @@ def get_field(fieldname, fielddef, fieldmgr):
     defaultval = fieldmgr.get_value(fieldname)
     if fielddef['type'] == 'text':
         field = urwid.Edit('', defaultval)
+
         def getter():
             """ 
             Closure around urwid.Edit.get_edit_text(), which we'll
@@ -101,6 +107,7 @@ def get_field(fieldname, fielddef, fieldmgr):
         field = urwid.Text(('label', defaultval))
     elif fielddef['type'] == 'checkbox':
         field = urwid.CheckBox('', defaultval)
+
         def getter():
             """ 
             Closure around urwid.CheckBox.get_state(), which we'll
@@ -119,7 +126,7 @@ def get_field(fieldname, fielddef, fieldmgr):
                                 ('fixed', 2, colon),
                                 ('weight', 2, field)])
 
-    wrapper = urwid.AttrWrap(editwidget, None, {'label':'labelfocus'})
+    wrapper = urwid.AttrWrap(editwidget, None, {'label': 'labelfocus'})
     return urwid.Padding(wrapper, ('fixed left', 3), ('fixed right', 3))
 
 
@@ -146,13 +153,14 @@ def get_buttons():
 def get_header():
     """ the header of our form, called from main() """
     text_header = ("lnedit - symlink editor"
-        " - Use arrow keys to select a field to edit, select 'OK'"
-        " when finished, or press ESC/select 'Cancel' to exit")
+                   " - Use arrow keys to select a field to edit, select 'OK'"
+                   " when finished, or press ESC/select 'Cancel' to exit")
     header = urwid.Text(text_header)
     return urwid.AttrWrap(header, 'header')
 
 
 class AdvancingListBox(urwid.ListBox):
+
     def keypress(self, size, key):
         key = super(AdvancingListBox, self).keypress(size, key)
         if key == 'enter':
@@ -168,7 +176,7 @@ def get_body(fieldmgr):
     for fieldname, fielddef in fieldmgr.fieldset.items():
         fieldwidgets.append(get_field(fieldname, fielddef, fieldmgr))
 
-    fieldwidgets.append(urwid.Divider(bottom=1)) 
+    fieldwidgets.append(urwid.Divider(bottom=1))
 
     fieldwidgets.append(get_buttons())
 
@@ -185,11 +193,11 @@ def main():
     # call our homebrewed object for managing our fields
     fieldmgr = FieldManager()
 
-    #  Our main loop is going to need three things: 
+    #  Our main loop is going to need three things:
     #  1. topmost widget - a "box widget" at the top of the widget hierarchy
     #  2. palette - style information for the UI
     #  3. unhandled_input function - to deal with top level keystrokes
-    
+
     #  1. topmost widget - a "box widget" at the top of the widget hierarchy
     header = get_header()
     body = get_body(fieldmgr)
@@ -197,15 +205,15 @@ def main():
 
     #  2. palette - style information for the UI
     palette = [
-        ('body','white','black', 'standout'),
-        ('header','white','dark blue', 'bold'),
-        ('labelfocus','white', 'dark blue', 'bold, underline'),
-        ('label','white', 'black'),
-        ('fieldfocus','white,underline', 'dark blue', 'bold, underline'),
-        ('field','white', 'black'),
-        ('button','light gray','black','bold'),
-        ('buttonfocus','white','dark blue'),
-        ]
+        ('body', 'white', 'black', 'standout'),
+        ('header', 'white', 'dark blue', 'bold'),
+        ('labelfocus', 'white', 'dark blue', 'bold, underline'),
+        ('label', 'white', 'black'),
+        ('fieldfocus', 'white,underline', 'dark blue', 'bold, underline'),
+        ('field', 'white', 'black'),
+        ('button', 'light gray', 'black', 'bold'),
+        ('buttonfocus', 'white', 'dark blue'),
+    ]
 
     #  3. unhandled_input function - to deal with top level keystrokes
     def unhandled(key):
@@ -226,6 +234,5 @@ def main():
         print("Exit value: " + inst.exit_token)
 
 
-if '__main__'==__name__:
+if '__main__' == __name__:
     main()
-
