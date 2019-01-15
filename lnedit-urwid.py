@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+"""
+A TUI for editing symlinks
+"""
+
 # Copyright (c) 2010-2019 Rob Lanphier
 #
 # Permission is hereby granted, free of charge, to any person
@@ -22,8 +26,10 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+import argparse
 import os
 import symlink_ui_urwid
+import sys
 
 
 def get_userroot():
@@ -32,7 +38,7 @@ def get_userroot():
     return userroot
 
 
-def get_values_from_link():
+def get_values_from_link(linkname):
     # function copied and adapted from swapln.py
 
     # our example starts with this pwd:
@@ -40,19 +46,18 @@ def get_values_from_link():
 
     retval = {}
 
-    linkname = "18W28tmp"
     retval['origlink'] = linkname
 
     # should result in ".userroot/tmp/2018/18W28/timeutil"
-    symlinkpath = os.readlink("18W28tmp")
+    symlinkpath = os.readlink(linkname)
     retval['targetref'] = symlinkpath
 
     # should result in
     # ""/home/robla/poochie14/home/robla/tmp/2018/18W28/timeutil"
     oldhome = os.path.realpath(symlinkpath)
 
-    # realpwd = os.path.realpath(os.getenv('PWD'))
-    realpwd = "/home/robla/tech/util/timeutil/weekutil/src-timeutil"
+    realpwd = os.path.realpath(os.getenv('PWD'))
+    # realpwd = "/home/robla/tech/util/timeutil/weekutil/src-timeutil"
 
     # should result in
     # "/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp"
@@ -79,8 +84,14 @@ def get_values_from_link():
     return retval
 
 
-def main():    
-    defaults = get_values_from_link()
+def main(argv=None):
+    # using splitlines to just get the first line
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
+
+    parser.add_argument('symlink', help='symlink for editing')
+    args = parser.parse_args()
+
+    defaults = get_values_from_link(args.symlink)
     
     symlink_ui_urwid.start_main_loop(defaults)
 

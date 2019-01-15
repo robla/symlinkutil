@@ -26,14 +26,13 @@ import urwid
 from collections import OrderedDict
 
 FIELD_DEFS = [
-    ['origlink', 'Original link', 'readonlytext', '1 orig'],
-    ['origreadlink', 'Full link (origreadlin)',
-     'readonlytext', '2 mumble duvs'],
-    ['targetref', 'New value', 'text', '3 french hens'],
+    ['origlink', 'Link name', 'readonlytext', ''],
+    ['origreadlink', 'Full link (readlink -f)', 'readonlytext', ''],
+    ['targetref', 'Target value', 'text', ''],
     ['targetref-userroot',
-        'Alternative (userroot-based)', 'readonlytext', '4 user roots'],
+        'Alternative (userroot-based)', 'readonlytext', ''],
     ['targetref-relpath',
-        'Alternative (relpath-based)', 'readonlytext', '5 rel paths'],
+        'Alternative (relpath-based)', 'readonlytext', ''],
     ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False]
 ]
 
@@ -240,7 +239,16 @@ def start_main_loop(defaults):
         print("Exit value: " + inst.exit_token)
 
 def main():
-    start_main_loop()
+    testvalues = {
+        "origlink": "18W28tmp",
+        "origreadlink": "/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp",
+        "targetref": ".userroot/tmp/2018/18W28/timeutil",
+        "targetref-userroot": ".userroot/tmp/2018/18W28/timeutil",
+        "targetref-relpath": "../../../../../../tech/util/timeutil/weekutil/src-timeutil/18W28tmp",
+        "allowbroken": False
+    }
+
+    start_main_loop(testvalues)
 
 if '__main__' == __name__:
     main()
