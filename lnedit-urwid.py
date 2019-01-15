@@ -22,6 +22,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+import os
 import urwid
 from collections import OrderedDict
 
@@ -32,8 +33,8 @@ FIELD_DEFS = [
     ['targetref', 'New value', 'text', '3 french hens'],
     ['targetref-userroot',
         'Alternative (userroot-based)', 'readonlytext', '4 user roots'],
-    ['targetref-realpath',
-        'Alternative (realpath-based)', 'readonlytext', '5 real paths'],
+    ['targetref-relpath',
+        'Alternative (relpath-based)', 'readonlytext', '5 rel paths'],
     ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False]
 ]
 
@@ -50,7 +51,7 @@ class FieldManager(object):
     implementation details of the widget set.
     """
 
-    def __init__(self):
+    def __init__(self, defaults):
         self.fieldset = OrderedDict()
         self.getters = {}
         for i, d in enumerate(FIELD_DEFS):
@@ -61,6 +62,8 @@ class FieldManager(object):
             self.fieldset[key]['type'] = d[2]
             self.fieldset[key]['default'] = d[3]
             self.getters[key] = lambda k=key: self.fieldset[k]['default']
+        for key, val in defaults.items():
+            self.fieldset[key]['default'] = val
 
     def set_getter(self, name, function):
         """ 
@@ -160,6 +163,10 @@ def get_header():
 
 
 class AdvancingListBox(urwid.ListBox):
+    """
+    This class makes it so that the cursor advances to the "<Ok>"
+    button upon receiving an 'enter'.
+    """
 
     def keypress(self, size, key):
         key = super(AdvancingListBox, self).keypress(size, key)
@@ -189,9 +196,67 @@ def get_body(fieldmgr):
     return urwid.AttrWrap(listbox, 'body')
 
 
+def get_userroot():
+    userroot = os.path.realpath(os.readlink(".userroot"))
+    userroot = os.getenv('USERROOT')
+    return userroot
+
+
+def get_values_from_link():
+    # function copied and adapted from swapln.py
+
+    # our example starts with this pwd:
+    # /home/robla/tech/util/timeutil/weekutil/src-timeutil
+
+    retval = {}
+
+    linkname = "18W28tmp"
+    retval['origlink'] = linkname
+
+    # should result in ".userroot/tmp/2018/18W28/timeutil"
+    symlinkpath = os.readlink("18W28tmp")
+    retval['targetref'] = symlinkpath
+
+    # should result in
+    # ""/home/robla/poochie14/home/robla/tmp/2018/18W28/timeutil"
+    oldhome = os.path.realpath(symlinkpath)
+
+    # realpwd = os.path.realpath(os.getenv('PWD'))
+    realpwd = "/home/robla/tech/util/timeutil/weekutil/src-timeutil"
+
+    # should result in
+    # "/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp"
+    newhome = os.path.normpath(os.path.join(realpwd, linkname))
+
+    #oldhome = os.getcwd()
+    #newhome = os.getenv('PWD')
+
+    # '../../../../../../tech/util/timeutil/weekutil/src-timeutil/18W28tmp'
+    symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
+    retval['targetref-relpath'] = symtarg_relpath
+
+    # '/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp'
+    symtarg_abspath = os.path.abspath(newhome)
+    retval['origreadlink'] = symtarg_abspath
+
+    # this should be 'tmp/2018/18W28/timeutil'
+    rel_to_userroot = os.path.relpath(oldhome, get_userroot())
+
+    # this should be '.userroot/tmp/2018/18W28/timeutil'
+    symtarg_userroot = os.path.join('.userroot', rel_to_userroot)
+    retval['targetref-userroot'] = symtarg_userroot
+
+    return retval
+
+
 def main():
+    
+    defaults = get_values_from_link()
+    
+
+    
     # call our homebrewed object for managing our fields
-    fieldmgr = FieldManager()
+    fieldmgr = FieldManager(defaults)
 
     #  Our main loop is going to need three things:
     #  1. topmost widget - a "box widget" at the top of the widget hierarchy
