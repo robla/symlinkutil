@@ -39,45 +39,27 @@ def get_userroot():
 
 
 def get_values_from_link(linkname):
-    # function copied and adapted from swapln.py
-
-    # our example starts with this pwd:
-    # /home/robla/tech/util/timeutil/weekutil/src-timeutil
+    """
+    Read a symlink at the given linkname, and return a dict for passing
+    into the UI.
+    """
 
     retval = {}
-
     retval['origlink'] = linkname
 
-    # should result in ".userroot/tmp/2018/18W28/timeutil"
     symlinkpath = os.readlink(linkname)
     retval['targetref'] = symlinkpath
 
-    # should result in
-    # ""/home/robla/poochie14/home/robla/tmp/2018/18W28/timeutil"
     oldhome = os.path.realpath(symlinkpath)
-
     realpwd = os.path.realpath(os.getenv('PWD'))
-    # realpwd = "/home/robla/tech/util/timeutil/weekutil/src-timeutil"
-
-    # should result in
-    # "/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp"
     newhome = os.path.normpath(os.path.join(realpwd, linkname))
-
-    #oldhome = os.getcwd()
-    #newhome = os.getenv('PWD')
-
-    # '../../../../../../tech/util/timeutil/weekutil/src-timeutil/18W28tmp'
     symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
     retval['targetref-relpath'] = symtarg_relpath
 
-    # '/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp'
     symtarg_abspath = os.path.abspath(newhome)
     retval['origreadlink'] = symtarg_abspath
 
-    # this should be 'tmp/2018/18W28/timeutil'
     rel_to_userroot = os.path.relpath(oldhome, get_userroot())
-
-    # this should be '.userroot/tmp/2018/18W28/timeutil'
     symtarg_userroot = os.path.join('.userroot', rel_to_userroot)
     retval['targetref-userroot'] = symtarg_userroot
 
