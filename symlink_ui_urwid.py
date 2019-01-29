@@ -234,9 +234,11 @@ def start_main_loop(defaults):
     try:
         urwidloop.run()
     except ExitUrwidForm as inst:
-        import json
-        print(json.dumps(fieldmgr.get_value_dict(), indent=4))
-        print("Exit value: " + inst.exit_token)
+        if inst.exit_token == 'ok':
+            return fieldmgr.get_value_dict()
+        else:
+            return inst.exit_token
+
 
 def main():
     testvalues = {

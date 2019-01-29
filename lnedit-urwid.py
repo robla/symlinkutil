@@ -66,6 +66,25 @@ def get_values_from_link(linkname):
     return retval
 
 
+def make_the_move(origlink, newtargetref, allowbroken=False):
+    # FIXME: put the imports at the top of the file
+    from pathlib import Path
+    import shutil
+    newtarg = Path(newtargetref)
+
+    if newtarg.exists() or allowbroken:
+        # TODO: make this atomic by creating and moving the new symlink over
+        # the old one, rather than deleting then moving.
+        os.remove(origlink)
+        os.symlink(newtargetref, origlink)
+    else:
+        raise FileNotFoundError(newtargetref)
+    retval = "{} links to {}".format(origlink, newtargetref)
+    if not newtarg.exists():
+        retval += "\nNOTE: {} doesn't appear to exist yet.".format(newtargetref)
+    return retval
+
+
 def main(argv=None):
     # using splitlines to just get the first line
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
@@ -73,10 +92,33 @@ def main(argv=None):
     parser.add_argument('symlink', help='symlink for editing')
     args = parser.parse_args()
 
-    defaults = get_values_from_link(args.symlink)
-    
-    symlink_ui_urwid.start_main_loop(defaults)
+    oldvals = get_values_from_link(args.symlink)
+
+    newvals = symlink_ui_urwid.start_main_loop(oldvals)
+
+    #import json
+    #print("oldvals:")
+    #print(json.dumps(oldvals, indent=4))
+    #print("newvals:")
+    #print(json.dumps(newvals, indent=4))
+    # def make_the_move(origlink, origreadlink, newtargetref):
+    try:
+        origlink=oldvals['origlink']
+        origreadlink=oldvals['origreadlink']
+        newtargetref=newvals['targetref']
+    except TypeError:
+        import sys
+        sys.exit()
+    try:
+        status = make_the_move(origlink, newtargetref, allowbroken=newvals['allowbroken'])
+        print(status)
+    except FileNotFoundError:
+        print("File not found: " + newtargetref)
+        print("'Allow writing broken symlink' set to '{}'.  Aborting.".format(newvals['allowbroken']))
+        #print("make_the_move(origlink: {}, origreadlink: {}, newtargetref: {})".format(origlink=origlink, origreadlink=origreadlink, newtargetref=newtargetref))
 
 
 if '__main__' == __name__:
     main()
+
+
