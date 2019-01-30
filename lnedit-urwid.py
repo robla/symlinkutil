@@ -45,23 +45,26 @@ def get_values_from_link(linkname):
     """
 
     retval = {}
-    retval['origlink'] = linkname
+    # first add the core data:
 
+    retval['origlink'] = linkname
     symlinkpath = os.readlink(linkname)
     retval['targetref'] = symlinkpath
 
+    # suggestion #1 - absolute path
     oldhome = os.path.realpath(symlinkpath)
+    retval['suggestion-abspath'] = oldhome
+
+    # suggestion #2 - relative path to pwd
     realpwd = os.path.realpath(os.getenv('PWD'))
     newhome = os.path.normpath(os.path.join(realpwd, linkname))
     symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
-    retval['targetref-relpath'] = symtarg_relpath
+    retval['suggestion-relpath'] = symtarg_relpath
 
-    symtarg_abspath = os.path.abspath(newhome)
-    retval['origreadlink'] = symtarg_abspath
-
+    # suggestion #3 - .userroot alternative
     rel_to_userroot = os.path.relpath(oldhome, get_userroot())
     symtarg_userroot = os.path.join('.userroot', rel_to_userroot)
-    retval['targetref-userroot'] = symtarg_userroot
+    retval['suggestion-userroot'] = symtarg_userroot
 
     return retval
 
@@ -101,10 +104,8 @@ def main(argv=None):
     #print(json.dumps(oldvals, indent=4))
     #print("newvals:")
     #print(json.dumps(newvals, indent=4))
-    # def make_the_move(origlink, origreadlink, newtargetref):
     try:
         origlink=oldvals['origlink']
-        origreadlink=oldvals['origreadlink']
         newtargetref=newvals['targetref']
     except TypeError:
         import sys

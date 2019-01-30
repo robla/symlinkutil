@@ -27,13 +27,14 @@ from collections import OrderedDict
 
 FIELD_DEFS = [
     ['origlink', 'Link name', 'readonlytext', ''],
-    ['origreadlink', 'Full link (readlink -f)', 'readonlytext', ''],
     ['targetref', 'Target value', 'text', ''],
-    ['targetref-userroot',
-        'Alternative (userroot-based)', 'readonlytext', ''],
-    ['targetref-relpath',
-        'Alternative (relpath-based)', 'readonlytext', ''],
-    ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False]
+    ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False],
+    ['suggestion-abspath',
+        'Suggestion (absolute path): abspath', 'readonlytext', ''],
+    ['suggestion-relpath',
+        'Suggestion (relative to pwd):', 'readonlytext', ''],
+    ['suggestion-userroot',
+        'Suggestion (.userroot based)', 'readonlytext', '']
 ]
 
 
@@ -44,9 +45,18 @@ class ExitUrwidForm(Exception):
 
 
 class FieldManager(object):
-    """ 
-    This class manages the field data without being entangled in the 
-    implementation details of the widget set.
+    """
+    This class manages the field data without being entangled in the
+    implementation details of the widget set.  The whole getter/setter
+    business isn't very Pythonic(tm), but the big benefit is having
+    these as functions for attaching as closures in the Urwid code.
+
+    The way it works:
+    * define the FIELD_DEFS global
+    * pass in a dict with scalar variables
+    * hook this up to Urwid, and start the urwid.MainLoop
+    * call get_value_dict to get the modified array back
+
     """
 
     def __init__(self, defaults):
