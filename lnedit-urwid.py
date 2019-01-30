@@ -84,7 +84,7 @@ def make_the_move(origlink, newtargetref, allowbroken=False):
         raise FileNotFoundError(newtargetref)
     retval = "{} links to {}".format(origlink, newtargetref)
     if not newtarg.exists():
-        retval += "\nNOTE: {} doesn't appear to exist yet.".format(newtargetref)
+        retval += "\nNOTE: {} doesn't appear to exist.".format(newtargetref)
     return retval
 
 
@@ -92,31 +92,44 @@ def main(argv=None):
     # using splitlines to just get the first line
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
 
+    parser.add_argument('-a', '--allow-broken',
+                        help='allow resulting broken link', action="store_true")
+    parser.add_argument(
+        '-j', '--just-print', help='just print the JSON for debugging', action="store_true")
     parser.add_argument('symlink', help='symlink for editing')
     args = parser.parse_args()
 
-    oldvals = get_values_from_link(args.symlink)
+    try:
+        oldvals = get_values_from_link(args.symlink)
+    except OSError:
+        print("File '{}' isn't a symlink.".format(args.symlink))
+        parser.print_usage()
+        sys.exit(1)
 
+    oldvals['allowbroken'] = args.allow_broken
     newvals = symlink_ui_urwid.start_main_loop(oldvals)
 
-    #import json
-    #print("oldvals:")
-    #print(json.dumps(oldvals, indent=4))
-    #print("newvals:")
-    #print(json.dumps(newvals, indent=4))
+    if args.just_print:
+        import json
+        if newvals == 'cancel':
+            print(json.dumps(oldvals, indent=4))
+        else:
+            print(json.dumps(newvals, indent=4))
+        sys.exit()
+
     try:
-        origlink=oldvals['origlink']
-        newtargetref=newvals['targetref']
+        origlink = oldvals['origlink']
+        newtargetref = newvals['targetref']
     except TypeError:
-        import sys
         sys.exit()
     try:
-        status = make_the_move(origlink, newtargetref, allowbroken=newvals['allowbroken'])
+        status = make_the_move(origlink, newtargetref,
+                               allowbroken=newvals['allowbroken'])
         print(status)
     except FileNotFoundError:
         print("File not found: " + newtargetref)
-        print("'Allow writing broken symlink' set to '{}'.  Aborting.".format(newvals['allowbroken']))
-        #print("make_the_move(origlink: {}, origreadlink: {}, newtargetref: {})".format(origlink=origlink, origreadlink=origreadlink, newtargetref=newtargetref))
+        print("'Allow writing broken symlink' set to '{}'.  Aborting.".format(
+            newvals['allowbroken']))
 
 
 if '__main__' == __name__:
