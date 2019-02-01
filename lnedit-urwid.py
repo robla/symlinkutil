@@ -3,7 +3,7 @@
 A TUI for editing symlinks
 """
 
-# Copyright (c) 2010-2019 Rob Lanphier
+# Copyright (c) 2019 Rob Lanphier
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -69,21 +69,29 @@ def get_values_from_link(linkname):
     return retval
 
 
-def make_the_move(origlink, newtargetref, allowbroken=False):
+def make_the_move(origlink, newlinkname, newtargetref, allowbroken=False, savebackup=False):
     # FIXME: put the imports at the top of the file
     from pathlib import Path
     import shutil
-    newtarg = Path(newtargetref)
+    backupname = newlinkname + "~"
 
-    if newtarg.exists() or allowbroken:
+    if Path(newtargetref).exists() or allowbroken:
         # TODO: make this atomic by creating and moving the new symlink over
         # the old one, rather than deleting then moving.
-        os.remove(origlink)
-        os.symlink(newtargetref, origlink)
+        if savebackup:
+            if Path(backupname).exists():
+                os.remove(backupname)
+        if Path(newlinkname).is_symlink():
+            if savebackup:
+                os.rename(newlinkname, backupname)
+                print("Backup {} saved.".format(backupname))
+            else:
+                os.remove(newlinkname)
+        os.symlink(newtargetref, newlinkname)
     else:
         raise FileNotFoundError(newtargetref)
-    retval = "{} links to {}".format(origlink, newtargetref)
-    if not newtarg.exists():
+    retval = "{} -> {}".format(newlinkname, newtargetref)
+    if not Path(newtargetref).exists():
         retval += "\nNOTE: {} doesn't appear to exist.".format(newtargetref)
     return retval
 
@@ -92,10 +100,13 @@ def main(argv=None):
     # using splitlines to just get the first line
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
 
-    parser.add_argument('-a', '--allow-broken',
+    parser.add_argument('-b', '--backup',
+                        help='save a tilde backup of the edited symlink',
+                        action="store_true")
+    parser.add_argument('-j', '--just-print',
+                        help='just print the JSON for debugging', action="store_true")
+    parser.add_argument('-x', '--allow-broken',
                         help='allow resulting broken link', action="store_true")
-    parser.add_argument(
-        '-j', '--just-print', help='just print the JSON for debugging', action="store_true")
     parser.add_argument('symlink', help='symlink for editing')
     args = parser.parse_args()
 
@@ -107,6 +118,7 @@ def main(argv=None):
         sys.exit(1)
 
     oldvals['allowbroken'] = args.allow_broken
+    oldvals['savebackup'] = args.backup
     newvals = symlink_ui_urwid.start_main_loop(oldvals)
 
     if args.just_print:
@@ -117,14 +129,18 @@ def main(argv=None):
             print(json.dumps(newvals, indent=4))
         sys.exit()
 
+    origlink = oldvals['origlink']
     try:
-        origlink = oldvals['origlink']
         newtargetref = newvals['targetref']
+        newlinkname = newvals['origlink']
     except TypeError:
+        # newvals is a simple scalar on <Cancel>
+        print("Cancelled edit. {} is unchanged.".format(origlink))
         sys.exit()
     try:
-        status = make_the_move(origlink, newtargetref,
-                               allowbroken=newvals['allowbroken'])
+        status = make_the_move(origlink, newlinkname, newtargetref,
+                               allowbroken=newvals['allowbroken'],
+                               savebackup=newvals['savebackup'])
         print(status)
     except FileNotFoundError:
         print("File not found: " + newtargetref)
@@ -134,5 +150,3 @@ def main(argv=None):
 
 if '__main__' == __name__:
     main()
-
-

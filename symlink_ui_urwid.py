@@ -26,9 +26,10 @@ import urwid
 from collections import OrderedDict
 
 FIELD_DEFS = [
-    ['origlink', 'Link name', 'readonlytext', ''],
+    ['origlink', 'Link name', 'text', ''],
     ['targetref', 'Target value', 'text', ''],
     ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False],
+    ['savebackup', 'Save tilde backup of edited symlink?', 'checkbox', False],
     ['suggestion-abspath',
         'Suggestion (absolute path): abspath', 'readonlytext', ''],
     ['suggestion-relpath',
@@ -252,12 +253,13 @@ def start_main_loop(defaults):
 
 def main():
     testvalues = {
-        "origlink": "18W28tmp",
-        "origreadlink": "/home/robla/tech/util/timeutil/weekutil/src-timeutil/18W28tmp",
-        "targetref": ".userroot/tmp/2018/18W28/timeutil",
-        "targetref-userroot": ".userroot/tmp/2018/18W28/timeutil",
-        "targetref-relpath": "../../../../../../tech/util/timeutil/weekutil/src-timeutil/18W28tmp",
-        "allowbroken": False
+        "origlink": "testvalue",
+        "targetref": "this_isnt_meant_to_do_anything",
+        "suggestion-abspath": "its just meant",
+        "suggestion-userroot": "as a dummy value",
+        "suggestion-relpath": "to draw the UI",
+        "allowbroken": False,
+        "savebackup": False
     }
 
     start_main_loop(testvalues)
