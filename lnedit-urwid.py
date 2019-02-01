@@ -55,10 +55,30 @@ def get_values_from_link(linkname):
     oldhome = os.path.realpath(symlinkpath)
     retval['suggestion-abspath'] = oldhome
 
+    # FIXME FIXME 2019-01-31
+    # What I need to do is to figure out how to calculate the working directory
+    # of a symlink.  So, for example, if I have a symlink named "foo" in this
+    # directory:
+    # /tmp/d1/d2
+    # ...and this symlink
+    # /tmp/d1/d2/bardir -> /tmp/d1/d3
+    # ...and a file named "bar" in this directory
+    # /tmp/d1/d3
+    # ...and "foo" points to "bar" in d3 via symlink that looks like this:
+    # foo -> bardir/bar
+    # ...and I call lnedit from d1, like so:
+    # lnedit d2/foo
+    # ...then I want the suggestion to change the foo link into
+    # foo -> ../d3/bar
+    # ^^^^ FIXME
     # suggestion #2 - relative path to pwd
     realpwd = os.path.realpath(os.getenv('PWD'))
-    newhome = os.path.normpath(os.path.join(realpwd, linkname))
-    symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
+    if os.path.isabs(symlinkpath):
+        newhome = os.path.normpath(os.path.join(realpwd, symlinkpath))
+        symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
+    else:
+        newhome = os.path.normpath(os.path.join(realpwd, symlinkpath))
+        symtarg_relpath = os.path.relpath(newhome, symlinkpath)
     retval['suggestion-relpath'] = symtarg_relpath
 
     # suggestion #3 - .userroot alternative
