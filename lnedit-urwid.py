@@ -82,8 +82,11 @@ def get_values_from_link(linkname):
     retval['suggestion-relpath'] = symtarg_relpath
 
     # suggestion #3 - .userroot alternative
-    rel_to_userroot = os.path.relpath(oldhome, get_userroot())
-    symtarg_userroot = os.path.join('.userroot', rel_to_userroot)
+    try:
+        rel_to_userroot = os.path.relpath(oldhome, get_userroot())
+        symtarg_userroot = os.path.join('.userroot', rel_to_userroot)
+    except FileNotFoundError:
+        symtarg_userroot = ""
     retval['suggestion-userroot'] = symtarg_userroot
 
     return retval
