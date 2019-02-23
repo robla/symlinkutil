@@ -52,38 +52,24 @@ def get_values_from_link(linkfile):
     retval['targetref'] = symlinkvalue
 
     # suggestion #1 - absolute path
-    oldhome = os.path.realpath(symlinkvalue)
-    retval['suggestion-abspath'] = oldhome
+    abspath = os.path.realpath(linkfile)
+    retval['suggestion-abspath'] = abspath
 
-    # FIXME FIXME 2019-01-31
-    # What I need to do is to figure out how to calculate the working directory
-    # of a symlink.  So, for example, if I have a symlink named "foo" in this
-    # directory:
-    # /tmp/d1/d2
-    # ...and this symlink
-    # /tmp/d1/d2/bardir -> /tmp/d1/d3
-    # ...and a file named "bar" in this directory
-    # /tmp/d1/d3
-    # ...and "foo" points to "bar" in d3 via symlink that looks like this:
-    # foo -> bardir/bar
-    # ...and I call lnedit from d1, like so:
-    # lnedit d2/foo
-    # ...then I want the suggestion to change the foo link into
-    # foo -> ../d3/bar
-    # ^^^^ FIXME
-    # suggestion #2 - relative path to pwd
+    # suggestion #2 - relative path to linkfile location
     realpwd = os.path.realpath(os.getenv('PWD'))
     if os.path.isabs(symlinkvalue):
         newhome = os.path.normpath(os.path.join(realpwd, symlinkvalue))
-        symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
+        abspath_dir = os.path.dirname(abspathdir)
+        symtarg_relpath = os.path.relpath(newhome, abspath_dir)
     else:
         newhome = os.path.normpath(os.path.join(realpwd, symlinkvalue))
-        symtarg_relpath = os.path.relpath(newhome, symlinkvalue)
+        linkvalpwd = os.path.join(realpwd, os.path.dirname(linkfile))
+        symtarg_relpath = os.path.relpath(abspath, linkvalpwd)
     retval['suggestion-relpath'] = symtarg_relpath
 
     # suggestion #3 - .userroot alternative
     try:
-        rel_to_userroot = os.path.relpath(oldhome, get_userroot())
+        rel_to_userroot = os.path.relpath(abspath, get_userroot())
         symtarg_userroot = os.path.join('.userroot', rel_to_userroot)
     except FileNotFoundError:
         symtarg_userroot = ""
