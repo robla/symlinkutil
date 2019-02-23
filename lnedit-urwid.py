@@ -38,21 +38,21 @@ def get_userroot():
     return userroot
 
 
-def get_values_from_link(linkname):
+def get_values_from_link(linkfile):
     """
-    Read a symlink at the given linkname, and return a dict for passing
+    Read a symlink at the given linkfile, and return a dict for passing
     into the UI.
     """
 
     retval = {}
     # first add the core data:
 
-    retval['origlink'] = linkname
-    symlinkpath = os.readlink(linkname)
-    retval['targetref'] = symlinkpath
+    retval['origlink'] = linkfile
+    symlinkvalue = os.readlink(linkfile)
+    retval['targetref'] = symlinkvalue
 
     # suggestion #1 - absolute path
-    oldhome = os.path.realpath(symlinkpath)
+    oldhome = os.path.realpath(symlinkvalue)
     retval['suggestion-abspath'] = oldhome
 
     # FIXME FIXME 2019-01-31
@@ -73,12 +73,12 @@ def get_values_from_link(linkname):
     # ^^^^ FIXME
     # suggestion #2 - relative path to pwd
     realpwd = os.path.realpath(os.getenv('PWD'))
-    if os.path.isabs(symlinkpath):
-        newhome = os.path.normpath(os.path.join(realpwd, symlinkpath))
+    if os.path.isabs(symlinkvalue):
+        newhome = os.path.normpath(os.path.join(realpwd, symlinkvalue))
         symtarg_relpath = os.path.relpath(newhome, os.path.dirname(oldhome))
     else:
-        newhome = os.path.normpath(os.path.join(realpwd, symlinkpath))
-        symtarg_relpath = os.path.relpath(newhome, symlinkpath)
+        newhome = os.path.normpath(os.path.join(realpwd, symlinkvalue))
+        symtarg_relpath = os.path.relpath(newhome, symlinkvalue)
     retval['suggestion-relpath'] = symtarg_relpath
 
     # suggestion #3 - .userroot alternative
