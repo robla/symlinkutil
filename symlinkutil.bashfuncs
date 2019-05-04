@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# pushlink: push the directory for a given symlink onto the stack
+pushlink () { if [ -d $1 ]; then pushd $(chase $1); else pushd $(dirname $(chase $1)) ; fi;}
+
+# cdlink: cd to the directory for a given symlink (same as "cd -P"?)
+cdlink () {
+  if [ -z "$1" ]
+  then echo "Do you kno-o-o-o-o-ow, where you're going to....?"
+  elif [ -d $1 ]
+  then cd $(readlink -f $1)
+  elif [ -f $1 ];
+  then cd $(dirname "$(readlink -f $1)")
+  else echo Hrm $1 really?
+  fi
+}
+
+cdlink-myxtrim () {
+  if [ -z "$1" ]; then
+    cdlink .
+  else
+    cdlink "$1"
+  fi
+  cd "$(myxtrim)"
+}
+
+alias cdl='cdlink-myxtrim'
+
+tcdl () {
+  # cdl $1
+  cdlink-myxtrim $1
+  # jtb
+  tagbasecd
+}
+
+alias rl='readlink -f'
+
+# mkdirreadlink: fix a dead symlink by creating a directory
+mkdirreadlink () { mkdir $(readlink "$1") ; }
+
+alias mrl='mkdirreadlink'
+
+# FIXME: generalize this so that it works for more than just tags
+# (e.g. "brokenlinks", not just "brokentags")
+brokentags () {
+  pushd $(tagbase)
+  find . -xtype l | xargs ls -l
+  popd
+}
+
+alias tagsbroken='brokentags'
+
+# tagbase counterpart to "urf" (userrootfix)
+# tbf = tagbase fix
+alias tbf="tagbase -l"
+alias turf="tagbase -l"
+
