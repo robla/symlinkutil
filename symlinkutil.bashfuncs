@@ -3,15 +3,23 @@
 # pushlink: push the directory for a given symlink onto the stack
 pushlink () { if [ -d $1 ]; then pushd $(chase $1); else pushd $(dirname $(chase $1)) ; fi;}
 
-# cdlink: cd to the directory for a given symlink (same as "cd -P"?)
+# cdlink: resolve target with readlink -f, then cd to that
 cdlink () {
-  if [ -z "$1" ]
-  then echo "Do you kno-o-o-o-o-ow, where you're going to....?"
-  elif [ -d $1 ]
-  then cd $(readlink -f $1)
-  elif [ -f $1 ];
-  then cd $(dirname "$(readlink -f $1)")
-  else echo Hrm $1 really?
+  if [ -z "$1" ]; then
+    printf "usage: cdlink <target>\n"
+    printf "\n"
+    printf "Resolves <target> with readlink -f, then changes to that "
+    printf "directory\n"
+  else
+    if [ -d $1 ]; then
+      cd "$(readlink -f $1)"
+    else
+      if [ -f $1 ]; then
+        cd $(dirname "$(readlink -f $1)")
+      else
+        printf "File not found: '$1'\n"
+      fi
+    fi
   fi
 }
 
@@ -54,4 +62,7 @@ alias tagsbroken='brokentags'
 # tbf = tagbase fix
 alias tbf="tagbase -l"
 alias turf="tagbase -l"
+
+
+
 
