@@ -59,7 +59,7 @@ def get_values_from_link(linkfile):
     realpwd = os.path.realpath(os.getenv('PWD'))
     if os.path.isabs(symlinkvalue):
         newhome = os.path.normpath(os.path.join(realpwd, symlinkvalue))
-        abspath_dir = os.path.dirname(abspathdir)
+        abspath_dir = os.path.dirname(abspath)
         symtarg_relpath = os.path.relpath(newhome, abspath_dir)
     else:
         newhome = os.path.normpath(os.path.join(realpwd, symlinkvalue))
