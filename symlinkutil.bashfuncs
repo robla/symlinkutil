@@ -63,6 +63,22 @@ alias tagsbroken='brokentags'
 alias tbf="tagbase -l"
 alias turf="tagbase -l"
 
+readlink-f-fixlink () {
+  (
+  if [ -z "$1" ]; then
+    echo "usage: readlink-f-fixlink arg1"
+    echo "   arg1: the link to fix"
+    exit;
+  fi
+  if [[ -L "$1" && -d "$1" ]]; then
+    linkname="$1"
+    final="$(readlink -f $linkname)"
+    rm "$linkname"
+    ln -s "$final" "$linkname"
+  else
+    echo "$1 doesn't seem to be a link"
+  fi
+  )
+}
 
-
-
+alias rlf="readlink-f-fixlink"
