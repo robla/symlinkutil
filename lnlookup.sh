@@ -19,22 +19,11 @@ done
 # shift off the flags using arithmetic expansion of OPTIND
 shift $(($OPTIND - 1))
 
-
-#tmpfile=$(mktemp /tmp/lnlookup.XXXXXXXXXX)
-#echo "lnlookup file created at ${tmpfile}"
-
-tmpfile=/tmp/lnlookup.tmp
+lookuptable=lnlookup-table.sh
+ltcommand="cacheme $(dirname $(readlink -f ${BASH_SOURCE[0]}))/${lookuptable}"
 
 if [ ! -d ${HOME} ]; then
   echo "HOME variable is weird: ${HOME}"
-fi
-
-# TODO: move away from hardcoded temp file; use cacheme instead
-if [ ! -e ${tmpfile} ]; then
-  find ${HOME} -type l | while read LINE; do printf "${LINE}\t$(readlink -f ${LINE})\n"; done > ${tmpfile}
-  echo "lnlookup file created at ${tmpfile}"
-else
-  echo "using cached ${tmpfile}"
 fi
 
 if [ ! -z "$fullhomedirflag" ]; then
@@ -46,7 +35,7 @@ fi
 if [ -e "$1" ]; then
   echo "$(${trimcmd} $(dirname .myxroot))/$1 links to $(${trimcmd} $1)"
   echo "Symlinks to $(${trimcmd} $1):"
-  grep "$(readlink -f $1)$" "${tmpfile}" |
+  grep "$(readlink -f $1)$" <($ltcommand) |
     while IFS=$'\t' read -a lnArray; do
       printf "$(${trimcmd} $(dirname ${lnArray[0]}))/$(basename ${lnArray[0]})\n"
     done
