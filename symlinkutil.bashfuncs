@@ -70,7 +70,7 @@ readlink-f-fixlink () {
     echo "   arg1: the link to fix"
     exit;
   fi
-  if [[ -L "$1" && -d "$1" ]]; then
+  if [[ -L "$1" ]]; then
     linkname="$1"
     final="$(readlink -f $linkname)"
     rm "$linkname"
