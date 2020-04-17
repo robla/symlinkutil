@@ -6,8 +6,12 @@ import shutil
 import sys
 from os.path import realpath, normpath
 
-# adapted from http://stackoverflow.com/a/3042378/314034
+
 def confirm_step(prompt):
+    '''
+    y/n prompt
+    adapted from http://stackoverflow.com/a/3042378/314034
+    '''
     # raw_input returns the empty string for "enter"
     yes = set(['yes','y', 'ye', ''])
     no = set(['no','n'])
