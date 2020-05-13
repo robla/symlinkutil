@@ -34,22 +34,27 @@ def swapln(oldhome, newhome, forsure=False, relative=False):
         symtarg = os.path.relpath(newhome, os.path.dirname(oldhome))
     else:
         symtarg = os.path.abspath(newhome)
-    print("rm (1-new)")
-    print("  1-new) {}".format(newhome))
-    print("mv (1-old) (2-new)")
-    print("  1-old) {}".format(oldhome))
-    print("  2-new) {}".format(newhome))
-    print("cd (1-olddir)")
-    print("  1-olddir) {}".format(os.path.dirname(oldhome)))
-    print("ln -s (1-symtarg)")
-    print("  1-symtarg) {}".format(symtarg))
+
+    debugoutput = ""
+    debugoutput += "rm (1-new)\n"
+
+    debugoutput += "  1-new) {}\n".format(newhome)
+    debugoutput += "mv (1-old) (2-new)\n"
+    debugoutput += "  1-old) {}\n".format(oldhome)
+    debugoutput += "  2-new) {}\n".format(newhome)
+    debugoutput += "cd (1-olddir)\n"
+    debugoutput += "  1-olddir) {}\n".format(os.path.dirname(oldhome))
+    debugoutput += "ln -s (1-symtarg)\n"
+    debugoutput += "  1-symtarg) {}\n".format(symtarg)
     if forsure:
-        print("okaaaaay....")
+        debugoutput += "performing action....\n"
         os.remove(newhome)
         shutil.move(oldhome, newhome)
         os.symlink(symtarg, oldhome)
     else:
-        print("haven't done it yet...")
+        debugoutput += "haven't done it yet...\n"
+    return {"debugoutput" : debugoutput,
+            "symtarg": symtarg}
 
 
 def main(argv=None):
@@ -62,6 +67,9 @@ def main(argv=None):
                     action="store_true")
     parser.add_argument('-r', '--relative',
                         help='use relative links (default is absolute)',
+                        action="store_true")
+    parser.add_argument('-v', '--verbose',
+                        help='print a lot to stdout',
                         action="store_true")
     parser.add_argument('symfile', help='optional symlink to swap',
                         nargs='?', default=None)
@@ -83,10 +91,15 @@ def main(argv=None):
     print('newhome: {}'.format(newhome))
 
     if args.force:
-        swapln(oldhome, newhome, forsure=True, relative=args.relative)
+        sret=swapln(oldhome, newhome, forsure=True, relative=args.relative)
+        if args.verbose:
+            print(sret['debugoutput'])
     else:
-        swapln(oldhome, newhome, relative=args.relative)
+        sret=swapln(oldhome, newhome, relative=args.relative)
+        if args.verbose:
+            print(sret['debugoutput'])
         if confirm_step('wanna keep going?'):
+            print("okaaaaay....\n")
             swapln(oldhome, newhome, forsure=True, relative=args.relative)
         else:
             print("well, nevermind then")
