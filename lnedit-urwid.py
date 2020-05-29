@@ -105,6 +105,30 @@ def make_the_move(origlink, newlinkname, newtargetref, allowbroken=False, saveba
     return retval
 
 
+def get_vals_from_user(args):
+    try:
+        oldvals = get_values_from_link(args.symlink)
+    except OSError:
+        print("File '{}' isn't a symlink.".format(args.symlink))
+        parser.print_usage()
+        sys.exit(1)
+
+    oldvals['allowbroken'] = args.allow_broken
+    oldvals['savebackup'] = args.backup
+    newvals = symlink_ui_urwid.start_main_loop(oldvals)
+
+    return (oldvals, newvals)
+
+
+def get_vals_json(oldvals, newvals):
+    import json
+    if newvals == 'cancel':
+        retval = json.dumps(oldvals, indent=4)
+    else:
+        retval = json.dumps(newvals, indent=4)
+    return retval
+
+
 def main(argv=None):
     # using splitlines to just get the first line
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
@@ -119,23 +143,10 @@ def main(argv=None):
     parser.add_argument('symlink', help='symlink for editing')
     args = parser.parse_args()
 
-    try:
-        oldvals = get_values_from_link(args.symlink)
-    except OSError:
-        print("File '{}' isn't a symlink.".format(args.symlink))
-        parser.print_usage()
-        sys.exit(1)
-
-    oldvals['allowbroken'] = args.allow_broken
-    oldvals['savebackup'] = args.backup
-    newvals = symlink_ui_urwid.start_main_loop(oldvals)
+    (oldvals, newvals) = get_vals_from_user(args)
 
     if args.just_print:
-        import json
-        if newvals == 'cancel':
-            print(json.dumps(oldvals, indent=4))
-        else:
-            print(json.dumps(newvals, indent=4))
+        print(get_vals_json(oldvals, newvals))
         sys.exit()
 
     origlink = oldvals['origlink']
