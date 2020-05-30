@@ -38,7 +38,7 @@ def get_userroot():
     return userroot
 
 
-def get_values_from_link(linkfile):
+def get_values_from_link(linkfile, allowbroken, savebackup):
     """
     Read a symlink at the given linkfile, and return a dict for passing
     into the UI.
@@ -75,6 +75,10 @@ def get_values_from_link(linkfile):
         symtarg_userroot = ""
     retval['suggestion-userroot'] = symtarg_userroot
 
+    # add parameters that were passed in
+    retval['allowbroken'] = allowbroken
+    retval['savebackup'] = savebackup
+
     return retval
 
 
@@ -105,21 +109,6 @@ def make_the_move(origlink, newlinkname, newtargetref, allowbroken=False, saveba
     return retval
 
 
-def get_vals_from_user(args):
-    try:
-        oldvals = get_values_from_link(args.symlink)
-    except OSError:
-        print("File '{}' isn't a symlink.".format(args.symlink))
-        parser.print_usage()
-        sys.exit(1)
-
-    oldvals['allowbroken'] = args.allow_broken
-    oldvals['savebackup'] = args.backup
-    newvals = symlink_ui_urwid.start_main_loop(oldvals)
-
-    return (oldvals, newvals)
-
-
 def get_vals_json(oldvals, newvals):
     import json
     if newvals == 'cancel':
@@ -133,6 +122,7 @@ def main(argv=None):
     # using splitlines to just get the first line
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[1])
 
+    # 0. fetch commandline args
     parser.add_argument('-b', '--backup',
                         help='save a tilde backup of the edited symlink',
                         action="store_true")
@@ -143,8 +133,20 @@ def main(argv=None):
     parser.add_argument('symlink', help='symlink for editing')
     args = parser.parse_args()
 
-    (oldvals, newvals) = get_vals_from_user(args)
+    # 1. get oldvals from symlink given on cli
+    try:
+        oldvals = get_values_from_link(args.symlink,
+                                       allowbroken = args.allow_broken,
+                                       savebackup = args.backup)
+    except OSError:
+        print("File '{}' isn't a symlink.".format(args.symlink))
+        parser.print_usage()
+        sys.exit(1)
 
+    # 2. get newvals from user interface
+    newvals = symlink_ui_urwid.start_main_loop(oldvals)
+
+    # 3. take appropriate action
     if args.just_print:
         print(get_vals_json(oldvals, newvals))
         sys.exit()
