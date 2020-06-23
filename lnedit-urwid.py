@@ -146,12 +146,14 @@ def main(argv=None):
     # 2. get newvals from user interface
     newvals = symlink_ui_urwid.start_main_loop(oldvals)
 
-    # 3. take appropriate action
+    # 3. just print if that was what was instructed on the cli
     if args.just_print:
         print(get_vals_json(oldvals, newvals))
         sys.exit()
 
     origlink = oldvals['origlink']
+
+    # 4. otherwise perform some hacky exception handling
     try:
         newtargetref = newvals['targetref']
         newlinkname = newvals['origlink']
@@ -159,6 +161,8 @@ def main(argv=None):
         # newvals is a simple scalar on <Cancel>
         print("Cancelled edit. {} is unchanged.".format(origlink))
         sys.exit()
+
+    # 5. And maybe even try more hacky exception handling
     try:
         status = make_the_move(origlink, newlinkname, newtargetref,
                                allowbroken=newvals['allowbroken'],
