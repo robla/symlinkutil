@@ -23,6 +23,8 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 import urwid
+#import lnedit.errors
+
 from collections import OrderedDict
 
 FIELD_DEFS = [
