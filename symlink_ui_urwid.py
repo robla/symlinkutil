@@ -30,8 +30,8 @@ from collections import OrderedDict
 FIELD_DEFS = [
     ['origlink', 'Link name', 'text', ''],
     ['targetref', 'Target value', 'text', ''],
-    ['allowbroken', 'Allow writing broken symlink?', 'checkbox', False],
-    ['savebackup', 'Save tilde backup of edited symlink?', 'checkbox', False],
+    ['allowbroken', 'Force writing broken symlink? (-f)', 'checkbox', False],
+    ['savebackup', 'Save tilde backup of edited symlink? (-b)', 'checkbox', False],
     ['suggestion-abspath',
         'Suggestion (absolute path): abspath', 'readonlytext', ''],
     ['suggestion-relpath',

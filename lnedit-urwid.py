@@ -126,17 +126,17 @@ def main(argv=None):
     parser.add_argument('-b', '--backup',
                         help='save a tilde backup of the edited symlink',
                         action="store_true")
+    parser.add_argument('-f', '--force',
+                        help='Write the symlink even if it\'s broken', action="store_true")
     parser.add_argument('-j', '--just-print',
                         help='just print the JSON for debugging', action="store_true")
-    parser.add_argument('-x', '--allow-broken',
-                        help='allow resulting broken link', action="store_true")
     parser.add_argument('symlink', help='symlink for editing')
     args = parser.parse_args()
 
     # 1. get oldvals from symlink given on cli
     try:
         oldvals = get_values_from_link(args.symlink,
-                                       allowbroken = args.allow_broken,
+                                       allowbroken = args.force,
                                        savebackup = args.backup)
     except OSError:
         print("File '{}' isn't a symlink.".format(args.symlink))
