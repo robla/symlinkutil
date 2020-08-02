@@ -74,7 +74,13 @@ class FieldManager(object):
             self.fieldset[key]['default'] = d[3]
             self.getters[key] = lambda k=key: self.fieldset[k]['default']
         for key, val in defaults.items():
-            self.fieldset[key]['default'] = val
+            # look up the defaults in the template.  If the key isn't
+            # defined, ignore it (and don't render it in the UI)
+            try:
+                self.fieldset[key]['default'] = val
+            except KeyError:
+                pass
+
 
     def set_getter(self, name, function):
         """ 
