@@ -136,8 +136,8 @@ def main(argv=None):
     # 1. get oldvals from symlink given on cli
     try:
         oldvals = get_values_from_link(args.symlink,
-                                       allowbroken = args.force,
-                                       savebackup = args.backup)
+                                       allowbroken=args.force,
+                                       savebackup=args.backup)
     except OSError:
         print("File '{}' isn't a symlink.".format(args.symlink))
         parser.print_usage()
@@ -172,6 +172,12 @@ def main(argv=None):
         print("File not found: " + newtargetref)
         print("'Allow writing broken symlink' set to '{}'.  Aborting.".format(
             newvals['allowbroken']))
+
+    # 6. Delete the original link if it was renamed (and the user allows)
+    if newvals['deleteorig'] and origlink != newlinkname:
+        print('Replacing %s with %s' % (origlink, newlinkname))
+        from pathlib import Path
+        Path(origlink).unlink()
 
 
 if '__main__' == __name__:

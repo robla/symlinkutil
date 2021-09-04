@@ -31,7 +31,9 @@ FIELD_DEFS = [
     ['origlink', 'Link name', 'text', ''],
     ['targetref', 'Target value', 'text', ''],
     ['allowbroken', 'Force writing broken symlink? (-f)', 'checkbox', False],
-    ['savebackup', 'Save tilde backup of edited symlink? (-b)', 'checkbox', False],
+    ['savebackup',
+        'Save tilde backup of edited symlink? (-b)', 'checkbox', False],
+    ['deleteorig', 'Delete the original link?', 'checkbox', True],
     ['suggestion-abspath',
         'Suggestion (absolute path): abspath', 'readonlytext', ''],
     ['suggestion-relpath',
@@ -80,7 +82,6 @@ class FieldManager(object):
                 self.fieldset[key]['default'] = val
             except KeyError:
                 pass
-
 
     def set_getter(self, name, function):
         """ 
@@ -270,7 +271,10 @@ def main():
         "savebackup": False
     }
 
-    start_main_loop(testvalues)
+    outvals = start_main_loop(testvalues)
+    import json
+    print(json.dumps(outvals, indent=4))
+
 
 if '__main__' == __name__:
     main()
